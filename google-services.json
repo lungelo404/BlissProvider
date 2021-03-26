@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "882398289333",
+    "project_id": "blissprovider-bbd73",
+    "storage_bucket": "blissprovider-bbd73.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:882398289333:android:eb97c851e6bc2085cd4dfc",
+        "android_client_info": {
+          "package_name": "com.BlissApp.userApp.BlissGroupProvider"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "882398289333-1i0m4lavc3770jf10g0dknhhbnsk6lqm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAe1OptlDiAGCTIzh-3e1yzhsdQLIPhWj0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "882398289333-1i0m4lavc3770jf10g0dknhhbnsk6lqm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
