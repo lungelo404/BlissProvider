@@ -4,6 +4,7 @@ import blissApi from "../api/blissApi";
 import {NavigationActions} from 'react-navigation';
 import {AsyncStorage, ToastAndroid} from 'react-native';
 import mime from 'mime';
+import { call } from 'react-native-reanimated';
 
 
 const AuthContext = React.createContext();
@@ -44,13 +45,13 @@ export const AuthProvider = ({children})=>{
         try{
             const response = await blissApi.get(`/${id}/get-provider-details`);
             dispatch({type:'register', payload:response.data.regObj});
+            console.log(response.data)
             ToastAndroid.show('Update successful', ToastAndroid.SHORT);
-            
         }catch(err){
             console.log(err);
             ToastAndroid.show('Could not get user details', ToastAndroid.SHORT);
         }
-    }
+    }   
 
     const checkForToken = async (callback)=>{
         const token = await AsyncStorage.getItem('token');
@@ -160,9 +161,9 @@ export const AuthProvider = ({children})=>{
         try{
             const response = await blissApi.get(`/provider/${id}/add-skill/${skillId}/to-portfolio`);
             await getUser(id);   
-            callback();
-        }catch(err){
-            console.log(err);  
+            callback();            
+        }catch(err){ 
+            console.log(err);   
         }
     }
 
@@ -227,6 +228,26 @@ export const AuthProvider = ({children})=>{
         }
     }
 
+    const deposit = async (id, amount, callback)=>{
+        try {
+            await blissApi.post(`/update-provider-balance/${id}`, {amount});
+            await getUser(id);
+            callback();
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
+    const withdraw = async (id, amount ,callback)=>{
+        try {
+            await blissApi.post(`/withdraw-provider/${id}`, {amount});
+            await getUser(id);
+            callback();
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
 
  
     const [stateAuth, dispatch] = useReducer(authReducer, {userDetails:{
@@ -247,7 +268,7 @@ export const AuthProvider = ({children})=>{
                 name:'Hair and scalp treatment'
             },
             {
-                name:'Ladies Long/Xlong cut and blowdry'
+                name:'Ladies Long/Xlong cut and blowdry' 
             }
         ],
         sosContacts:[],
@@ -260,7 +281,7 @@ export const AuthProvider = ({children})=>{
       }
     }
   )
-    return <AuthContext.Provider value={{deleteDate,setUserDate,worksSun,worksSat,updateSos,removeSkill,addSkill,getUser,stateAuth,editBio,editBank,saveNumber, uploadImage,logout, register, checkForToken,isThisYourFirstTime}}>{children}</AuthContext.Provider>
+    return <AuthContext.Provider value={{withdraw,deposit,deleteDate,setUserDate,worksSun,worksSat,updateSos,removeSkill,addSkill,getUser,stateAuth,editBio,editBank,saveNumber, uploadImage,logout, register, checkForToken,isThisYourFirstTime}}>{children}</AuthContext.Provider>
 }
 
 

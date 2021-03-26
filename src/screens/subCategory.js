@@ -12,7 +12,7 @@ import moment from "moment";
 import AuthContext from "../context/authContext";
 
 import {useFonts,Nunito_200ExtraLight, Nunito_600SemiBold,Nunito_400Regular,Nunito_300Light} from '@expo-google-fonts/nunito';
-import {NavTitle} from "../components/headers";
+import {NavTitle} from "../components/headers";  
 
 
 
@@ -56,8 +56,8 @@ const subCategory = ({navigation})=>{
                                 removeSkill(stateAuth.userDetails._id,item._id,(err, done)=>{
                                     setChecked(...checked,{[item._id]:!isChecked});
                                     setPressed(true);
-                                    ToastAndroid.show('Succesfully removed', ToastAndroid.SHORT);
-                                })
+                                    ToastAndroid.show('Succesfully removed skill', ToastAndroid.SHORT);
+                                });
                              }}>
                                 <View style={styles.choiceContainer}>
                                     <View style={styles.nameContainer}>
@@ -68,10 +68,10 @@ const subCategory = ({navigation})=>{
                                             checkedColor='#68823b'   
                                             checked
                                             onPress={()=>{
-                                                addSkill(stateAuth.userDetails._id,item._id,(err, done)=>{
+                                                removeSkill(stateAuth.userDetails._id,item._id,(err, done)=>{
                                                     setChecked(...checked,{[item._id]:!isChecked});
                                                     setPressed(true);
-                                                    ToastAndroid.show('Succesfully removed', ToastAndroid.SHORT);
+                                                    ToastAndroid.show('Succesfully removed skill', ToastAndroid.SHORT);
                                                 })
                                             }}
                                         />
@@ -84,10 +84,10 @@ const subCategory = ({navigation})=>{
                         return(
                             <TouchableOpacity onPress={()=>{
                                 ToastAndroid.show('Updating....', ToastAndroid.LONG);
-                                removeSkill(stateAuth.userDetails._id,item._id,(err, done)=>{
+                                addSkill(stateAuth.userDetails._id,item._id,(err, done)=>{
                                     setChecked(...checked,{[item._id]:!isChecked});
                                     setPressed(true);
-                                    ToastAndroid.show('Succesfully added skill', ToastAndroid.SHORT);
+                                    ToastAndroid.show('Succesfully removed', ToastAndroid.SHORT);
                                 })
                                 }}>
                                 <View style={styles.choiceContainer}>
@@ -106,7 +106,7 @@ const subCategory = ({navigation})=>{
                                                 })
                                             }}
                                         />
-                                    </View>
+                                    </View> 
                                 </View>
                             </TouchableOpacity>
                         )

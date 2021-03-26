@@ -91,7 +91,8 @@ const Checkout = ({navigation})=>{
                  </View>
 
                  <DividerWithTextInbetween title="Payment" />
-                 <Review keys='Your wallet balance' value={`R ${parseFloat(stateAuth.userDetails.balance).toFixed(2)}`} />
+                 <Review keys='Subtotal' value={`R ${parseFloat(stateCart.product.price).toFixed(2)}`} />
+                 <Review keys='Delivery fee' value={`R ${parseFloat('100').toFixed(2)}`} />
                  <Review keys='Amount to pay' value={`R ${parseFloat(outstandingAmount).toFixed(2)}`} />
 
                  <Processing processing={processing} />

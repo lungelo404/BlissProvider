@@ -48,6 +48,7 @@ import {StoreProvider} from './src/storeProvider';
 import ResolveAuth from "./src/screens/resolveAuth";
 import LoadWallets from './src/screens/loadWallets';
 import PrivacyPolicy from './src/screens/privacyPolicy';
+import deposit from './src/screens/deposit';
 
  
 const switchNavigator = createSwitchNavigator({
@@ -90,6 +91,7 @@ const switchNavigator = createSwitchNavigator({
       skills:Skills,
       SubCategory:Subcategory,
       wallet:Wallet,
+      deposit:deposit,
       myEarnings:myEarnings,
       sos:sos,
       privacy:PrivacyPolicy
