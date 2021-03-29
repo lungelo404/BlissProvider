@@ -21,10 +21,12 @@ const authReducer = (state, action) =>{
            return {...state, bankingDetails:action.payload}
        case 'number': 
            return {...state,sosContacts:action.payload}
+       case 'unread':
+           return {...state, unread:action.payload}
        default: 
             return state
     }
-}  
+}   
 
 
 export const AuthProvider = ({children})=>{
@@ -45,13 +47,24 @@ export const AuthProvider = ({children})=>{
         try{
             const response = await blissApi.get(`/${id}/get-provider-details`);
             dispatch({type:'register', payload:response.data.regObj});
-            console.log(response.data)
+            isUnread(response.data.regObj.notifications)
             ToastAndroid.show('Update successful', ToastAndroid.SHORT);
         }catch(err){
             console.log(err);
             ToastAndroid.show('Could not get user details', ToastAndroid.SHORT);
         }
     }   
+
+
+    const isUnread = (array)=>{ 
+       let readNotifications = [];
+        array.forEach((item)=>{
+          if(item.isRead === false){
+             readNotifications.push(item.isRead)
+          }
+       }); 
+      dispatch({type:'unread', payload:readNotifications});
+    }
 
     const checkForToken = async (callback)=>{
         const token = await AsyncStorage.getItem('token');
@@ -63,6 +76,7 @@ export const AuthProvider = ({children})=>{
           let  response = await blissApi.get(`/${token}/check-provider-token`);
             dispatch({type:'register', payload:response.data.regObj[0]}); 
             ToastAndroid.show('Welcome', ToastAndroid.SHORT)
+            isUnread(response.data.regObj[0].notifications)
             callback(true);
         }catch (err) {
             console.log(err.message)
@@ -117,13 +131,54 @@ export const AuthProvider = ({children})=>{
                 }
             });  
            await getUser(id);
-           console.log(response.data)
+
            callback();
         }catch(err){
             console.log(err.message);
             ToastAndroid.show('Could not upload the image, please try again later on', ToastAndroid.SHORT);
         }
 
+    }
+
+
+    const uploadPortfolio = async (id,url, callback) =>{
+        const newImageUri =  "file:///" + url.split("file:/").join("");
+        let formData = new FormData();
+        formData.append('id', id);
+        formData.append('url',{
+            uri:newImageUri,
+            name:newImageUri.split("/").pop(),
+            type:mime.getType(newImageUri),
+        });
+        try{ 
+            console.log(formData)
+            const response = await blissApi.post(`/${id}/upload-image-provider-portfolio`, formData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                    "Accept": "application/json"
+                },
+                onUploadProgress:data=>{
+                    console.log(data);
+                }
+            });  
+           await getUser(id);
+
+           callback();
+        }catch(err){
+            console.log(err.message);
+            ToastAndroid.show('Could not upload the image, please try again later on', ToastAndroid.SHORT);
+        }
+
+    }
+
+    const deleteImage = async (id, imageId,imgId, callback)=>{
+        try {
+            await blissApi.get(`/delete-image/${imageId}/${imgId}`);
+            await getUser(id);
+            callback();
+        } catch (err) {
+            console.log(err);
+        }
     }
 
     const editBio = async (id,regObj,callback) =>{
@@ -248,41 +303,25 @@ export const AuthProvider = ({children})=>{
         }
     }
 
+    const order = async(userId, productId, obj, callback)=>{
+         try {
+            await blissApi.post(`/confirm-booking/${userId}/${productId}`,{obj});
+            getUser(userId);
+            callback();
+         } catch (err) {
+             console.log(err);
+         }   
+    }
+
 
  
-    const [stateAuth, dispatch] = useReducer(authReducer, {userDetails:{
-        name:'',
-        surname:'Kaseke',
-        email:'',
-        gender:'',
-        phoneNumber:'', 
-        Image:'https://i.ibb.co/G31rGgP/30-307416-profile-icon-png-image-free-download-searchpng-employee.png',
-        _id:'123654789',
-        address:'409 Kirkness St, Sunnyside, Pretoria, Gauteng, 0002, ZA',
-        balance:'0',
-        skills:[
-            { 
-                name:'Gents Hot Towel Express Facial & Double close shave'
-            },
-            {
-                name:'Hair and scalp treatment'
-            },
-            {
-                name:'Ladies Long/Xlong cut and blowdry' 
-            }
-        ],
-        sosContacts:[],
-        bankingDetails:{
-            bank:'',
-            accountNumber:'',
-            branchCode:'',
-            accountHolder:'' 
-        }
-      }
+    const [stateAuth, dispatch] = useReducer(authReducer, {
+        userDetails:{},
+        unread:[]
     }
   )
-    return <AuthContext.Provider value={{withdraw,deposit,deleteDate,setUserDate,worksSun,worksSat,updateSos,removeSkill,addSkill,getUser,stateAuth,editBio,editBank,saveNumber, uploadImage,logout, register, checkForToken,isThisYourFirstTime}}>{children}</AuthContext.Provider>
+    return <AuthContext.Provider value={{deleteImage,uploadPortfolio,order,withdraw,deposit,deleteDate,setUserDate,worksSun,worksSat,updateSos,removeSkill,addSkill,getUser,stateAuth,editBio,editBank,saveNumber, uploadImage,logout, register, checkForToken,isThisYourFirstTime,}}>{children}</AuthContext.Provider>
 }
 
 
-export default AuthContext ;
+export default AuthContext ; 

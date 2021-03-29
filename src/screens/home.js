@@ -1,4 +1,4 @@
-import React, {useContext, useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState, useRef} from 'react';
 import {StyleSheet, View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Platform} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { FontAwesome5 } from '@expo/vector-icons';
@@ -28,13 +28,27 @@ import blissApi from '../api/blissApi';
 
 
 
+
+Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    }),
+  });
+
+
+
+
 const homeScreen = ({navigation})=>{
     let [fontsLoaded] = useFonts({Nunito_200ExtraLight, Nunito_600SemiBold,Nunito_300Light,Nunito_400Regular});
     const {stateLocation, setCoords, setAddress} = useContext(LocationContext);
     const {stateStore, getProducts} = useContext(StoreContext);
     const [loader, setLoader] = useState(true)
     const addressObject = stateLocation.address[0];
-    const {stateAuth} = useContext(AuthContext);
+    const {stateAuth, getUser} = useContext(AuthContext);
+    const notificationListener = useRef();
+    const responseListener = useRef();  
 
 
 const registerForNotificationToken = async ()=>{
@@ -88,58 +102,52 @@ const registerForNotificationToken = async ()=>{
                 setCoords(geoCode)
                 const reverseGeoCodeParameters = {latitude:geoCode.coords.latitude, longitude:geoCode.coords.longitude}
                 let reversedCode =  await Location.reverseGeocodeAsync(reverseGeoCodeParameters);
+                updateLocation(geoCode.coords.latitude,geoCode.coords.longitude)
                 setAddress(reversedCode);
-            })();
+            })(); 
         }
-      
         registerForNotificationToken();
-
-        
-
+        notificationListener.current = Notifications.addNotificationReceivedListener(notification=>{
+            getUser(stateAuth.userDetails._id);
+            console.log('notification response comes here');
+        });
+        responseListener.current = Notifications.addNotificationResponseReceivedListener(response=>{
+           getUser(stateAuth.userDetails._id);
+           let type = response.notification.request.content.data.type;
+           if(type === 'message'){
+               navigation.navigate('Notifications');
+           }
+        });
+        return ()=>{
+            Notifications.removeNotificationSubscription(notificationListener);
+            Notifications.removeNotificationSubscription(responseListener);
+        }
     },[])
+
+
+
+    const updateLocation = async (latitude, longitude)=>{
+        try {
+            await blissApi.post(`/update-location-provider-coords/${stateAuth.userDetails._id}/`,{latitude,longitude});
+            console.log('done');
+        } catch (err) {
+            console.log(err);
+        }
+    }  
     if(fontsLoaded){
-        return(
+        return( 
             <View style={{flex:1}}>
                 <StatusBar animated={true}  backgroundColor="grey" />   
-                <Header navigation={navigation} title="Live tasks" />
-
-                {!loader?
-                <View style={styles.bookingContainer}>
-                    <View style={styles.headerContainer}>
-                        <Text style={styles.newBookingHeader}>New Booking!</Text>
-                    </View>
-                    <View style={styles.listContainer}>
-                       <BookingDetails Key='Date' Value='Thu Mar 04 2021' />
-                       <BookingDetails Key='Time' Value='09:00am' /> 
-                       <BookingDetails Key='Service booked' Value='Gents Hot Towel Express & Double-close shave' />
-                       <BookingDetails Key='Address' Value='407 Kirkness Street, Clydsdale, Pretoria, Gauteng, 0002, ZA' /> 
-                    </View>
-                    <View style={styles.confirmationContainer}>
-                        <View style={styles.left}>
-                            <TouchableOpacity style={styles.parent}>
-                                <Text style={styles.reject}>Reject</Text>
-                                <MaterialIcons  style={{textAlign:'center'}} name="cancel" size={24} color="#e74311" />
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.right}>
-                            <TouchableOpacity style={styles.parent}>
-                                    <Text style={styles.accept}>Accept</Text>
-                                    <Entypo style={{textAlign:'center'}} name="check" size={24} color="#fff" />
-                            </TouchableOpacity>
-                        </View>
-                    </View>
-                </View>
-
-                :  
- 
+                <Header navigation={navigation} title="Live tasks" /> 
+                {stateAuth.userDetails.isAproved  && !stateAuth.userDetails.isSuspended?
                 <View style={{flex:1,justifyContent:'center'}}>
                     <SkeletonPlaceholder>
                         <View style={{ alignItems: "center" }}>
-                            <View style={{  }}>
+                            <View style={{  }}> 
                                <View style={{ width: 340, height: 150, borderRadius: 4 }} />
                             </View>
                         </View>
-                    </SkeletonPlaceholder>
+                    </SkeletonPlaceholder>  
                        
                         <View style={{alignItems:'center',marginTop:15}}> 
                             <Text style={styles.waiting}>Waiting for bookings</Text>
@@ -148,8 +156,37 @@ const registerForNotificationToken = async ()=>{
                         <FontAwesome style={{position:'absolute', top:195, left:0, right:0, textAlign:'center'}} name="hourglass-1" size={55} color="grey" />
                  </View>
 
-                }
-        
+                :
+                !stateAuth.userDetails.isSuspended?
+                <View style={{marginHorizontal:15, marginTop:100}}>
+                    <AntDesign style={{textAlign:'center'}} name="warning" size={80} color="grey" />
+                    <Text style={styles.attentionHeader}>Not authourized!</Text>
+                    <Text style={styles.please}>Please note that for you to start recieving bookings, you have to be approved. This is done by the admin after all verification processes have been completed</Text>
+                    <View>
+                        <View style={{flexDirection: 'row', marginHorizontal:30, marginTop:15}}>
+                            <Text style={styles.key}>Application status: </Text>
+                            <Text style={styles.value}>In review</Text>
+                        </View>
+  
+                    </View>
+                </View>
+                :
+                <View style={{marginHorizontal:15, marginTop:100}}>
+                    <AntDesign style={{textAlign:'center'}} name="warning" size={80} color="grey" />
+                    <Text style={styles.attentionHeader}>Account has been Suspended!</Text>
+                    <Text style={styles.please}>Your account has been Suspended, please contact admin for clarification</Text>
+                    <View>
+                        <View style={{flexDirection: 'row', marginHorizontal:30, marginTop:15}}>
+                            <Text style={styles.key}>Account status: </Text>
+                            <Text style={{...styles.value, color:'red'}}>Suspended</Text>
+                        </View>
+  
+                    </View>
+                </View>
+                
+
+               }
+
             </View>
         )
     }
@@ -157,6 +194,29 @@ const registerForNotificationToken = async ()=>{
 }
 
 const styles = StyleSheet.create({
+    please:{
+        fontSize:10,
+        textAlign:'center',
+        color:'#bbb',
+        fontFamily:'Nunito_400Regular',
+    },
+    key:{
+        color:'orange',
+        fontSize:13,
+        fontFamily:'Nunito_400Regular',
+    },
+    value:{
+     color:'#68823b',
+     fontFamily:'Nunito_400Regular',
+     fontSize:13
+    },
+    attentionHeader:{
+        color:'orange',
+        marginVertical:10,
+        fontFamily:'Nunito_400Regular',
+        fontSize:15,
+        textAlign:'center'
+    },  
     listContainer:{
         borderLeftWidth:2,
         borderRightWidth:2,

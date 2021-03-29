@@ -14,10 +14,20 @@ const Shop = ({navigation})=>{
     const [searchValue, setSearchValue] = useState('');
     const {stateCart} = useContext(CartContext); 
     const {stateStore} = useContext(StoreContext);
+    const [list, setList] = useState(stateStore.StoreProducts);
+    const [filterList, setFilterList] = useState(stateStore.StoreProducts);
+
     const handleSearch =(text)=>{
-        setSearchValue(text);
-        console.log(text) 
+        setSearchValue(text); 
+        if(text === ' '){
+            setList(list);
+            return; 
+        }
+        setList(filterList.filter(item=>{
+            return item.name.includes(text);
+        }))
     }
+
     return(
         <View style={{flex: 1}}>
                {!stateCart.product.name.length ? 
@@ -32,7 +42,7 @@ const Shop = ({navigation})=>{
                            <Ionicons name="cart" size={35} color="white" />
                         </TouchableOpacity>
                    </View>
-                }
+                } 
             <View style={styles.textContainer}>
                  <AntDesign style={styles.icon} name="search1" size={24} color="gray" />
                  <TextInput underlineColorAndroid="transparent" style={styles.textInput} placeholder="Search" value={searchValue} onChangeText={(text=>handleSearch(text))}/>
@@ -41,7 +51,7 @@ const Shop = ({navigation})=>{
                 <FlatList
                   showsVerticalScrollIndicator={false}
                   showsHorizontalScrollIndicator={false}
-                  data={stateStore.StoreProducts}
+                  data={list}
                   keyExtractor={(key)=>key._id.toString()}
                   renderItem={({item})=>{
                       return( 

@@ -19,9 +19,10 @@ const account = ({navigation})=>{
     const {stateAuth} = useContext(AuthContext);
     if(fontsLoaded){
         return(
-            <ScrollView style={{flex:1, backgroundColor:'#fff'}}>
+            <View style={{flex:1, backgroundColor:'#fff'}}>
                 <StatusBar animated={true}  backgroundColor="grey" />
                 <Header navigation={navigation} title="My account" />
+                <ScrollView>
                 <TouchableOpacity onPress={()=>navigation.navigate('profileDetail')}>
                     <View style={styles.header}> 
                        <View style={{justifyContent:'center', alignItems:'center', flex:1}}>
@@ -44,20 +45,20 @@ const account = ({navigation})=>{
                <View style={{marginHorizontal:15}}>
                     <Divider style={styles.divider} />
               </View>
-
                 <View style={styles.accountContainerSecond}>
                         <ProfileTabs forward='banking' Icon='list'  navigation={navigation} title='BANKING DETAILS' />
                         <ProfileTabs forward='skills'  Icon='list'  navigation={navigation} title='MY SKILLS MATRIX' />
                         <ProfileTabs forward='wallet' Icon='wallet-outline' navigation={navigation} title='MY WALLET' />
+                        <ProfileTabs forward='portfolio' Icon='md-images-outline'  navigation={navigation} title='MY PORTFOLIO' />
                         <ProfileTabs forward='myOrders' Icon='wallet-outline' navigation={navigation} title='PAST JOBS & EARNINGS' />
                         <ProfileTabs forward='Orders' Icon='bookmarks-outline' navigation={navigation} title='MY ORDERS' />
                         <ProfileTabs forward='sos' Icon='phone' navigation={navigation} title='EMERGENCY CONTACTS' />
                         <ProfileTabs forward='privacy' Icon='list'  navigation={navigation} title='PRIVACY POLICY' />
-                        <ProfileTabs forward='finance' Icon='list'  navigation={navigation} title='TERMS & CONDITIONS' />
+                        <ProfileTabs forward='termsAndConditions' Icon='list'  navigation={navigation} title='TERMS & CONDITIONS' />
                 </View>
             
-           
-            </ScrollView>
+           </ScrollView>
+            </View>
         )
     }
     return <Loading />

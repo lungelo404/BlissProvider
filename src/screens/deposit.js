@@ -9,14 +9,14 @@ import AuthContext from '../context/authContext';
 
  
 
-
+ 
 const deposit = ({navigation})=>{
     const [url] = useState('https://www.payfast.co.za/eng/process');
     const [trackUrl, setMwana] = useState('');
     const {stateAuth, deposit} = useContext(AuthContext);
-    useEffect(()=>{
-        setTimeout(changeScreen,2000);
-    },[]); 
+    // useEffect(()=>{
+    //     setTimeout(changeScreen,2000);
+    // },[]); 
     const changeScreen = async ()=>{ 
         console.log("Yes")
          await deposit(stateAuth.userDetails._id,navigation.state.params.amount, ()=>{

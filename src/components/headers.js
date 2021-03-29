@@ -10,7 +10,7 @@ import { DrawerActions } from 'react-navigation-drawer';
 import {withNavigation} from 'react-navigation';
 import { Avatar, Badge, Icon, withBadge } from 'react-native-elements';
 import AuthContext from '../context/authContext';
-
+import { Ionicons } from '@expo/vector-icons';
 
 const Header = ({navigation, title})=>{
     let [fontsLoaded] = useFonts({Nunito_200ExtraLight, Nunito_600SemiBold,Nunito_300Light,Nunito_400Regular});
@@ -29,9 +29,9 @@ const Header = ({navigation, title})=>{
             <TouchableOpacity  onPress={()=>navigation.navigate('Notifications')}>
                 <View style={{...styles.left, flexDirection:'row', marginRight:20}}>
                      <Entypo name="bell" size={26} color="black" />
-                     <Badge value={stateAuth.userDetails.notifications.length} status="success" />
+                     <Badge value={stateAuth.unread.length} status="success" />
                 </View> 
-            </TouchableOpacity>
+            </TouchableOpacity>  
         
         </View>
     )
@@ -133,6 +133,60 @@ export const OrdersHeader = ({navigation,title1Selected,setProcessing, setTitleS
     if(fontsLoaded){ 
     return(
         <View style={styles.headerp}>
+          {title1Selected?
+           <View style={{flex:5, justifyContent:'center'}}>
+               <TouchableOpacity onPress={()=>{
+                    setTitleSelected2(false);
+                    setTitleSelected(true)
+               }}>
+                  <Text style={{...styles.title,fontSize:15, fontFamily:'Nunito_400Regular'}}>{`${title1}`}</Text>
+               </TouchableOpacity>
+          </View>
+          :
+          <View style={{flex:5, justifyContent:'center'}}>
+               <TouchableOpacity onPress={()=>{
+                   setTitleSelected2(false);
+                   setTitleSelected(true)
+               }}>
+                  <Text style={{...styles.title,fontSize:15,color:'gray', fontFamily:'Nunito_400Regular'}}>{`${title1}`}</Text>
+               </TouchableOpacity>
+          </View>
+         }
+          
+          {title2Selected?
+          <View style={{flex:5, justifyContent:'center'}}>
+              <TouchableOpacity onPress={()=>{
+                  setTitleSelected2(true);
+                  setTitleSelected(false)
+              }}>
+                  <Text style={{...styles.title, fontSize:15}}>{`${title2}`}</Text>
+              </TouchableOpacity>
+          </View>
+          :
+          <View style={{flex:5, justifyContent:'center'}}>
+            <TouchableOpacity onPress={()=>{
+                 setTitleSelected2(true);
+                 setTitleSelected(false)
+            }}>
+                <Text style={{...styles.title,color:'gray', fontSize:15}}>{`${title2}`}</Text>
+            </TouchableOpacity>
+         </View>
+
+          }
+             
+        
+   </View>
+    )
+    }
+    return null
+}
+
+
+export const OrdersHeaders = ({navigation,title1Selected,setProcessing, setTitleSelected, title2Selected,setTitleSelected2, title1, title2, forward, params})=>{
+    let [fontsLoaded] = useFonts({Nunito_200ExtraLight, Nunito_600SemiBold,Nunito_400Regular});
+    if(fontsLoaded){ 
+    return( 
+        <View style={styles.headerpz}>
           {title1Selected?
            <View style={{flex:5, justifyContent:'center'}}>
                <TouchableOpacity onPress={()=>{
@@ -286,6 +340,23 @@ const styles = StyleSheet.create({
         flexDirection:'row',
         justifyContent:'space-between'
     }, 
+
+    
+    headerpz:{
+        paddingTop:12 ,
+        paddingHorizontal:15,
+        paddingBottom:12,
+        backgroundColor:"#fff",
+        // shadowColor: '#000',
+        // shadowOffset: { width: 1, height: 1 },
+        // shadowOpacity:  0.4,
+        // shadowRadius: 3,
+        elevation: 3,
+        flexDirection:'row',
+        justifyContent:'space-between'
+    }, 
+
+
 })
 
 export default withNavigation(Header);

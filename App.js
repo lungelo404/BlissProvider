@@ -49,7 +49,8 @@ import ResolveAuth from "./src/screens/resolveAuth";
 import LoadWallets from './src/screens/loadWallets';
 import PrivacyPolicy from './src/screens/privacyPolicy';
 import deposit from './src/screens/deposit';
-
+import shopOrders from './src/screens/shopOrders';
+import Portfolio from './src/screens/portfolio';
  
 const switchNavigator = createSwitchNavigator({
    resolve:ResolveAuth, 
@@ -63,6 +64,7 @@ const switchNavigator = createSwitchNavigator({
      mainFlowInner:createMaterialBottomTabNavigator({
        Home:homeScreen,
        myOrders:ordersScreen,
+       Orders:shopOrders,
        shop:shop,
        account:accountScreen
      },{
@@ -94,7 +96,9 @@ const switchNavigator = createSwitchNavigator({
       deposit:deposit,
       myEarnings:myEarnings,
       sos:sos,
-      privacy:PrivacyPolicy
+      privacy:PrivacyPolicy,
+      portfolio:Portfolio
+      
    }),
 });
 const App = createAppContainer(switchNavigator);

@@ -16,18 +16,26 @@ const Sidebar = ({navigation}) =>{
    let [fontsLoaded] = useFonts({Nunito_200ExtraLight, Nunito_600SemiBold,Nunito_300Light,Nunito_400Regular});
    const {stateAuth, logout} = useContext(AuthContext);
    const {stateLocation, setCoords, setAddress} = useContext(LocationContext);
-   const addressObject = stateLocation.address[0];
-   const mess = `Please help!! 
-   I am in danger at ${addressObject.name, addressObject.street, addressObject.district, addressObject.city, addressObject.region, addressObject.postalCode, addressObject.isoCountryCode}
+   const mess = `
+I am in danger please help. \n
+Name: \n 
+ ${stateAuth.userDetails.name} ${stateAuth.userDetails.surname} \n
+Phone number: \n
+ ${stateAuth.userDetails.phoneNumber} \n
+email: \n
+ ${stateAuth.userDetails.email} \n
+Live location: \n
+https://www.google.com/maps/search/?api=1&query=${stateLocation.coords.coords.latitude},${stateLocation.coords.coords.longitude}
+      
    ` 
    const twilio = async()=>{
-      try{
-         const response = await blissApi.post('/send-message',{numbers:stateAuth.userDetails.sosContacts, })
-         console.log("The sos message has been sent here");
+      try{ 
+         await blissApi.post('/send-message',{numbers:stateAuth.userDetails.sosContacts,mess})
+         console.log("The sos message has been sent here"); 
          ToastAndroid.show('Message has been sent and the relevant authorities have been notified', ToastAndroid.SHORT);
          navigation.closeDrawer();
       }catch(err){
-         console.log(err.message);
+         console.log(err.message);  
          ToastAndroid.show('Message was not sent', ToastAndroid.SHORT);
       }
 
@@ -83,9 +91,9 @@ const Sidebar = ({navigation}) =>{
                   <Text style={styles.link}>Logout</Text>
                </TouchableOpacity>
 
-               <TouchableOpacity onPress={()=>logout(()=>{twilio()})} style={styles.linkContainer}>
+               <TouchableOpacity onPress={()=>twilio()} style={styles.linkContainer}>
                   <Text style={styles.SOS}>SOS</Text>
-               </TouchableOpacity>
+               </TouchableOpacity> 
                
 
  

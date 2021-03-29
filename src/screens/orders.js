@@ -8,6 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import {OrdersHeader} from "../components/headers"; 
 import {useFonts,Nunito_200ExtraLight, Nunito_600SemiBold,Nunito_400Regular,Nunito_300Light} from '@expo-google-fonts/nunito';
 import Loading from '../components/loading';
+import PastBookings from '../components/pastBookings';
+import UpcomingBookings from '../components/upcomingBookings';
 
 const orders = ({navigation})=>{
     let [fontsLoaded] = useFonts({Nunito_200ExtraLight, Nunito_600SemiBold,Nunito_300Light,Nunito_400Regular});
@@ -16,11 +18,15 @@ const orders = ({navigation})=>{
     const [title2Selected, setTitleSelected2] = useState(false);
     const [processing, setProcessing] = useState(false);
     if(fontsLoaded){
-        return(
+        return( 
             <View>
                 <StatusBar animated={true}  backgroundColor="#94a720" /> 
                 <OrdersHeader setProcessing={setProcessing} title1Selected={title1Selected} setTitleSelected={setTitleSelected} title2Selected={title2Selected} setTitleSelected2={setTitleSelected2} title1="Past" title2="Upcoming" />
-                
+                {title1Selected?
+                <PastBookings />
+                :
+                <UpcomingBookings />    
+            }
             </View>
         )
     }

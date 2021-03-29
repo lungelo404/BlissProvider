@@ -1,33 +1,34 @@
 {
   "project_info": {
-    "project_number": "882398289333",
-    "project_id": "blissprovider-bbd73",
-    "storage_bucket": "blissprovider-bbd73.appspot.com"
+    "project_number": "424281601748",
+    "firebase_url": "https://bliss-99e0b.firebaseio.com",
+    "project_id": "bliss-99e0b",
+    "storage_bucket": "bliss-99e0b.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:882398289333:android:eb97c851e6bc2085cd4dfc",
+        "mobilesdk_app_id": "1:424281601748:android:d2912bd1ede9c143812d41",
         "android_client_info": {
-          "package_name": "com.BlissApp.userApp.BlissGroupProvider"
+          "package_name": "com.app.bliss"
         }
       },
       "oauth_client": [
         {
-          "client_id": "882398289333-1i0m4lavc3770jf10g0dknhhbnsk6lqm.apps.googleusercontent.com",
+          "client_id": "424281601748-9n70nl50591h24bkoiqvu0dsdoi87vq4.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAe1OptlDiAGCTIzh-3e1yzhsdQLIPhWj0"
+          "current_key": "AIzaSyAKDXTEdEDuDYrhKuXb4zIXrGO4PELWtQA"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "882398289333-1i0m4lavc3770jf10g0dknhhbnsk6lqm.apps.googleusercontent.com",
+              "client_id": "424281601748-9n70nl50591h24bkoiqvu0dsdoi87vq4.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

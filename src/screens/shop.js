@@ -23,7 +23,7 @@ const shop = ({navigation})=>{
     return(
        <SafeAreaView style={styles.container}>
             <StatusBar animated={true}  backgroundColor="#c1ccae" />
-            <OrdersHeader setProcessing={setProcessing} title1Selected={title1Selected} setTitleSelected={setTitleSelected} title2Selected={title2Selected} setTitleSelected2={setTitleSelected2} title1="Bliss shop" title2="Dermatologica" />
+            <OrdersHeader setProcessing={setProcessing} title1Selected={title1Selected} setTitleSelected={setTitleSelected} title2Selected={title2Selected} setTitleSelected2={setTitleSelected2} title1="Bliss shop" title2="Dermalogica" />
             {title2Selected?
               <Dematologica />
               :

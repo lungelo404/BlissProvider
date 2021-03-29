@@ -5,6 +5,7 @@ import {useFonts,Nunito_200ExtraLight, Nunito_600SemiBold,Nunito_400Regular,Nuni
 import {withNavigation} from 'react-navigation'
 
 import DividerWithTextInbetween from "../components/dividerWithTextInbetween"; 
+import Loading from './loading';
  
 const shopProducts = ({navigation, Image, name, rating,price})=>{
     let [fontsLoaded] = useFonts({Nunito_200ExtraLight, Nunito_600SemiBold,Nunito_400Regular,Nunito_300Light});
@@ -31,21 +32,7 @@ const shopProducts = ({navigation, Image, name, rating,price})=>{
     )
     }  
     return(
-        <TouchableOpacity onPress={()=>navigation.navigate('productDetail')}>
-            <View style={styles.productContainer}> 
-
-                    <View style={{flex:3}}>
-                        <Avatar size='xlarge' source={Image} />
-                    </View>
-                    <View style={{flex:3, align: 'flex-start'}}>
-                        <Text style={styles.name}>{name}</Text>
-                        <View style={{marginRight:50}}> 
-                            <AirbnbRating isDisabled showRating={false} defaultRating={rating} count={5} size={18} />
-                        </View>
-                    </View>
-
-            </View>
-        </TouchableOpacity>
+       <Loading />
     )
 }  
 
