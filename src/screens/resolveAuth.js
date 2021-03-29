@@ -2,7 +2,7 @@ import React, {useContext} from 'react';
 
 import AuthContext from "../context/authContext";
 
-
+ 
 const ResolveAuth  = ({navigation})=>{
     const {stateAuth, checkForToken} = useContext(AuthContext);
     checkForToken((token)=>{ 
