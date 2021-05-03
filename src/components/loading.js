@@ -11,4 +11,4 @@ const Loading = ({navigation})=>{
     )
 }
 
-export default Loading;
+export default Loading; 

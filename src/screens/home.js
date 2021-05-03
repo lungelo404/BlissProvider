@@ -1,5 +1,5 @@
 import React, {useContext, useEffect, useState, useRef} from 'react';
-import {StyleSheet, View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Platform} from 'react-native';
+import {StyleSheet, View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Platform, ToastAndroid} from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { FontAwesome } from '@expo/vector-icons';
@@ -9,6 +9,8 @@ import SkeletonPlaceholder from "react-native-skeleton-placeholder";
 import { MaterialIcons } from '@expo/vector-icons';
 import { Entypo } from '@expo/vector-icons';
 import * as Location from 'expo-location';
+import CountDown from 'react-native-countdown-component';
+import io from "socket.io-client";
 
 import {useFonts,Nunito_200ExtraLight, Nunito_600SemiBold,Nunito_400Regular,Nunito_300Light} from '@expo-google-fonts/nunito';
 import Loading from '../components/loading';
@@ -25,6 +27,7 @@ import * as Notifications from 'expo-notifications';
 import * as Permissions from 'expo-permissions';
 import Constants from 'expo-constants';
 import blissApi from '../api/blissApi';
+import axios from 'axios';
 
 
 
@@ -32,8 +35,8 @@ import blissApi from '../api/blissApi';
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
       shouldShowAlert: true,
-      shouldPlaySound: false,
-      shouldSetBadge: false,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
     }),
   });
 
@@ -49,7 +52,10 @@ const homeScreen = ({navigation})=>{
     const {stateAuth, getUser} = useContext(AuthContext);
     const notificationListener = useRef();
     const responseListener = useRef();  
-
+    const [newBooking, setNewBooking] = useState([]);
+    const [bookingExpired, setBookingExpired] = useState(false);
+    const [socket, setSocket] = useState();
+    const [accepted, setAccepted] = useState(false);
 
 const registerForNotificationToken = async ()=>{
         let currentNotificationToken = stateAuth.userDetails.notificationToken;
@@ -67,10 +73,11 @@ const registerForNotificationToken = async ()=>{
             const token = (await Notifications.getExpoPushTokenAsync()).data;
             if(token !== currentNotificationToken){
                const response =  await blissApi.get(`/set-token-for-provider/${stateAuth.userDetails._id}/this-token/${token}`);
+               getUser(stateAuth.userDetails._id);
             }else{
                 console.log(currentNotificationToken);
             }
-        }else{
+        }else{ 
             alert("Must use a physical device for Push notifications")
         }
         if(Platform.OS === 'android'){
@@ -78,7 +85,7 @@ const registerForNotificationToken = async ()=>{
                 name:'default',
                 importance: Notifications.AndroidImportance.MAX,
                 vibrationPattern:[0,250,250,250],
-                lightColor:'#FF231F7C',
+                lightColor:'#68823b',
             })
         }
 }
@@ -87,7 +94,9 @@ const registerForNotificationToken = async ()=>{
 
 
     useEffect(()=>{
+        socketConnect();
         getProducts();
+        findNewBooking();
         setTimeout(function(){
             setLoader(true)
         },5000)
@@ -109,23 +118,61 @@ const registerForNotificationToken = async ()=>{
         registerForNotificationToken();
         notificationListener.current = Notifications.addNotificationReceivedListener(notification=>{
             getUser(stateAuth.userDetails._id);
-            console.log('notification response comes here');
+            findNewBookingTwo();
         });
         responseListener.current = Notifications.addNotificationResponseReceivedListener(response=>{
            getUser(stateAuth.userDetails._id);
+           findNewBookingTwo();
            let type = response.notification.request.content.data.type;
            if(type === 'message'){
                navigation.navigate('Notifications');
            }
         });
+
+
+
+
+
         return ()=>{
             Notifications.removeNotificationSubscription(notificationListener);
             Notifications.removeNotificationSubscription(responseListener);
         }
     },[])
 
+    const socketConnect = async()=>{ 
+        const socket =  await io(blissApi.defaults.baseURL,{query:{id:stateAuth.userDetails._id}});
+        setSocket(socket);  
+    }
+    const findNewBookingTwo  = async ()=>{
+        try {
+            const response = await blissApi.get(`/get-new-booking/${stateAuth.userDetails._id}/for-students`); 
+            const confirmationLength =  response.data.length;
+            if(confirmationLength === 0){
+                setNewBooking(response.data);
+                ToastAndroid.show('The booking has expired', ToastAndroid.SHORT);
+                return
+            }
+            setNewBooking(response.data);
+        } catch (err) {
+            console.log(err);   
+        }
+    } 
 
 
+    const findNewBooking = async ()=>{
+        try {
+            const response = await blissApi.get(`/get-new-booking/${stateAuth.userDetails._id}/for-students`); 
+            if(response.data.length >= 1 && response.data[0].Accepted === false){
+                setNewBooking(response.data);
+                return
+            }
+                // ToastAndroid.show("Booking has expired", ToastAndroid.SHORT);
+                setNewBooking([]);
+            
+        } catch (err) {
+            console.log(err);
+        }
+    }
     const updateLocation = async (latitude, longitude)=>{
         try {
             await blissApi.post(`/update-location-provider-coords/${stateAuth.userDetails._id}/`,{latitude,longitude});
@@ -134,27 +181,186 @@ const registerForNotificationToken = async ()=>{
             console.log(err);
         }
     }  
+
+    const acceptedBooking = async (bookingDetails)=>{
+        try {
+            if(bookingExpired){
+                ToastAndroid.show('The booking has expired', ToastAndroid.SHORT);
+                deleteBookingIgnored(bookingDetails);
+                setNewBooking([]);
+                return;
+            }
+            // const response = await blissApi.get(`/has-the-booking-expired/${bookingDetails._id}/`);
+            const message = {
+                to:bookingDetails.userNotificationToken,
+                sound: 'default',
+                title:'Accepted', 
+                _displayInForeground: true,
+                priority: 'high',
+                body:`${stateAuth.userDetails.name} has accepted your booking, please continue`,
+                data:{type:'Accepted'}    
+            }
+            const res = await axios.post('https://exp.host/--/api/v2/push/send', message, {
+                headers:{
+                  Accept: 'application/json',
+                  'Accept-encoding': 'gzip, deflate', 
+                  'Content-Type': 'application/json',
+                }
+            });
+            setAccepted(true);
+            handleSocket(bookingDetails.userDetails[0], "Accepted");
+            const response = await blissApi.get(`/send-booking-accepted/${bookingDetails._id}/booking`);
+        } catch (err) {
+            ToastAndroid.show("Error, Booking has expired / cancelled", ToastAndroid.SHORT);
+            console.log(err);
+        }
+    }
+
+    const handleSocket = async (recipient, text)=>{
+        socket.emit('Check-availability',{recipient, text});
+    }
+
+    const handleRejection = async(bookingDetails)=>{
+        try {
+            if(bookingExpired){
+                ToastAndroid.show('The booking has expired', ToastAndroid.SHORT);
+                deleteBookingIgnored(bookingDetails);
+                setNewBooking([]);
+                return;
+            }
+            const message = {
+                to:bookingDetails.userNotificationToken,
+                sound: 'default',
+                title:'Not available', 
+                _displayInForeground: true,
+                priority: 'high',
+                body:`${stateAuth.userDetails.name} is not available`,
+                data:{type:'Rejected'}    
+            }
+            const res = await axios.post('https://exp.host/--/api/v2/push/send', message, {
+                headers:{
+                  Accept: 'application/json',
+                  'Accept-encoding': 'gzip, deflate', 
+                  'Content-Type': 'application/json',
+                }
+            });
+            handleSocket(bookingDetails.userDetails[0], "Rejected");
+            ToastAndroid.show("Booking has been succesfully removed", ToastAndroid.SHORT);
+            deleteBookingIgnored(bookingDetails);
+        } catch (err) {
+            ToastAndroid.show("Error, Booking has expired / cancelled", ToastAndroid.SHORT);
+            setNewBooking([]);
+            console.log(err);
+        }
+    } 
+
+    const deleteBookingIgnored = async (bookingDetails)=>{
+        try {
+            console.log(newBooking);
+            const response = await blissApi.get(`/delete-this-booking/${newBooking[0]._id}/booking`);
+            setNewBooking([]);
+        } catch (error) {
+            setNewBooking([]);
+            console.log("there was an error with the booking");
+        }
+    }
+
     if(fontsLoaded){
         return( 
             <View style={{flex:1}}>
                 <StatusBar animated={true}  backgroundColor="grey" />   
                 <Header navigation={navigation} title="Live tasks" /> 
                 {stateAuth.userDetails.isAproved  && !stateAuth.userDetails.isSuspended?
-                <View style={{flex:1,justifyContent:'center'}}>
-                    <SkeletonPlaceholder>
-                        <View style={{ alignItems: "center" }}>
-                            <View style={{  }}> 
-                               <View style={{ width: 340, height: 150, borderRadius: 4 }} />
+                <>          
+                {newBooking.length === 0 ?       
+                     <View style={{flex:1,justifyContent:'center'}}>
+                        <SkeletonPlaceholder>
+                            <View style={{ alignItems: "center" }}>
+                                <View style={{  }}> 
+                                <View style={{ width: 340, height: 150, borderRadius: 4 }} />
+                                </View>
                             </View>
-                        </View>
-                    </SkeletonPlaceholder>  
-                       
-                        <View style={{alignItems:'center',marginTop:15}}> 
-                            <Text style={styles.waiting}>Waiting for bookings</Text>
-                        </View>
+                        </SkeletonPlaceholder>  
+                        
+                            <View style={{alignItems:'center',marginTop:15}}> 
+                                <Text style={styles.waiting}>Waiting for bookings</Text>
+                            </View>
 
-                        <FontAwesome style={{position:'absolute', top:195, left:0, right:0, textAlign:'center'}} name="hourglass-1" size={55} color="grey" />
-                 </View>
+                            <FontAwesome style={{position:'absolute', top:195, left:0, right:0, textAlign:'center'}} name="hourglass-1" size={55} color="grey" />
+                    </View> 
+
+                    :
+
+                <View style={styles.bookingContainer}>
+                    <View style={styles.headerContainer}>
+                        <Text style={styles.newBookingHeader}>New Booking!</Text>
+                    </View>
+                    {!accepted?
+                    <View style={styles.listContainer}>
+                       <BookingDetails Key='Date: ' Value={newBooking[0].date} />
+                       <BookingDetails Key='Time: ' Value={newBooking[0].time} /> 
+                       <BookingDetails Key='Service booked: ' Value={newBooking[0].service} />
+                       <BookingDetails Key='Address: ' Value={newBooking[0].Address} /> 
+                       <BookingDetails Key='Time remaining: ' Value={
+                        <CountDown 
+                                    until={360 - Math.abs((new Date().getTime() - new Date(newBooking[0].createdAt).getTime()) / 1000)} 
+                                    size={12}
+                                    onFinish={() =>{ 
+                                        ToastAndroid.show("Session has expired", ToastAndroid.SHORT);
+                                        setBookingExpired(true);
+                                        deleteBookingIgnored(newBooking[0]);
+                                        setNewBooking([]);
+                                    }}
+                                    digitStyle={{backgroundColor: '#FFF'}}
+                                    digitTxtStyle={{color: 'grey'}}
+                                    timeToShow={['M', 'S']} 
+                                    showSeparator
+                                    separatorStyle={{marginBottom:25}}
+                        />} 
+                       /> 
+                    </View>
+                    :
+                    <View style={styles.confirmedContainer}>
+                        <Text style={styles.key}>Thanks for confirming</Text>
+                        <Text style={styles.key}>Whats next?</Text>
+                        <Text style={styles.please}>The client still needs to confirm the booking, thereafter you will be notified if the client chooses to continue.</Text>
+                    </View>
+                }
+
+                    <View style={styles.confirmationContainer}>
+                        <View style={styles.left}>
+                            
+                            <TouchableOpacity onPress={()=>{
+                                if(accepted){
+                                    ToastAndroid.show("booking has already been accepted", ToastAndroid.SHORT);
+                                    return
+                                }
+                                handleRejection(newBooking[0])}
+                                } style={styles.parent}>
+                                <Text style={styles.reject}>Reject</Text>
+                                <MaterialIcons  style={{textAlign:'center'}} name="cancel" size={24} color="#e74311" />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.right}>
+                            <TouchableOpacity onPress={()=>{if(accepted){
+                                    ToastAndroid.show("booking has already been accepted", ToastAndroid.SHORT);
+                                    return
+                                }
+                                acceptedBooking(newBooking[0]);
+                                }
+                            }
+                                 style={styles.parent}>
+                                    <Text style={styles.accept}>Accept</Text>
+                                    <Entypo style={{textAlign:'center'}} name="check" size={24} color="#fff" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+                </View>
+
+                }
+
+
+                </>
 
                 :
                 !stateAuth.userDetails.isSuspended?
@@ -271,6 +477,12 @@ const styles = StyleSheet.create({
     },
     parent:{
         paddingVertical:10
+    },
+    confirmedContainer:{
+        backgroundColor:'#68823b',
+        height:150,
+        justifyContent:'center',
+        alignItems:'center'
     }
 
 

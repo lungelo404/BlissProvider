@@ -76,9 +76,10 @@ export const AuthProvider = ({children})=>{
           let  response = await blissApi.get(`/${token}/check-provider-token`);
           const check = response.data.regObj.length;
           if(check === 0){
+              await AsyncStorage.removeItem('token'); 
               callback(false);
               return
-          }
+          } 
             dispatch({type:'register', payload:response.data.regObj[0]}); 
             ToastAndroid.show('Welcome', ToastAndroid.SHORT)
             isUnread(response.data.regObj[0].notifications);  
