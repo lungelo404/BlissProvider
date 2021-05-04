@@ -139,10 +139,14 @@ const registerForNotificationToken = async ()=>{
         }
     },[])
 
-    const socketConnect = async()=>{ 
-        const socket =  await io(blissApi.defaults.baseURL,{query:{id:stateAuth.userDetails._id}});
-        setSocket(socket);  
-    }
+    const socketConnect = ()=>{ 
+        const Socket = io(blissApi.defaults.baseURL,{query:{id:stateAuth.userDetails._id}});
+        console.log(Socket.connected);
+        setSocket(Socket);
+        Socket.on('connect', ()=>{
+            console.log("has the socket been connected?", Socket.connected);
+        })   
+    }  
     const findNewBookingTwo  = async ()=>{
         try {
             const response = await blissApi.get(`/get-new-booking/${stateAuth.userDetails._id}/for-students`); 
@@ -218,6 +222,7 @@ const registerForNotificationToken = async ()=>{
 
     const handleSocket = async (recipient, text)=>{
         socket.emit('Check-availability',{recipient, text});
+        console.log("this function has been called");
     }
 
     const handleRejection = async(bookingDetails)=>{
