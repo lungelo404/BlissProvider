@@ -1,9 +1,11 @@
-import React, {useReducer} from 'react';
+import React, {useReducer, useState} from 'react';
 import NavigationService from '../navigationRef';
 import blissApi from "../api/blissApi";
 import {NavigationActions} from 'react-navigation';
-import {AsyncStorage, ToastAndroid} from 'react-native';
+import {ToastAndroid} from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import mime from 'mime';
+import io from "socket.io-client"
 import { call } from 'react-native-reanimated';
 
 
@@ -67,6 +69,7 @@ export const AuthProvider = ({children})=>{
     }
 
     const checkForToken = async (callback)=>{
+        console.log("hahah we are checking for th etoken")
         const token = await AsyncStorage.getItem('token');
         try{
             if(!token){ 
@@ -86,6 +89,7 @@ export const AuthProvider = ({children})=>{
             callback(true);
         }catch (err) {
             console.log(err.message)
+            console.log(err);
         }
     
     }
@@ -319,14 +323,33 @@ export const AuthProvider = ({children})=>{
          }   
     }
 
+    const [stateSocket, setSocket] = useState(undefined);
 
- 
+    const openSocket = async(room, callback)=>{
+        try {
+            const Socket = io(blissApi.defaults.baseURL, {
+                query:{id:room},
+                autoConnect:true,
+                transports:["websocket"]
+            });
+            setSocket(Socket);
+            callback();
+        } catch (error) {
+            console.log(error);
+            console.log("failded to connect to the socket");
+        }
+    }
+    
+
     const [stateAuth, dispatch] = useReducer(authReducer, {
         userDetails:{},
         unread:[]
     }
+
+    
+    
   )
-    return <AuthContext.Provider value={{deleteImage,uploadPortfolio,order,withdraw,deposit,deleteDate,setUserDate,worksSun,worksSat,updateSos,removeSkill,addSkill,getUser,stateAuth,editBio,editBank,saveNumber, uploadImage,logout, register, checkForToken,isThisYourFirstTime,}}>{children}</AuthContext.Provider>
+    return <AuthContext.Provider value={{openSocket,stateSocket,deleteImage,uploadPortfolio,order,withdraw,deposit,deleteDate,setUserDate,worksSun,worksSat,updateSos,removeSkill,addSkill,getUser,stateAuth,editBio,editBank,saveNumber, uploadImage,logout, register, checkForToken,isThisYourFirstTime,}}>{children}</AuthContext.Provider>
 }
 
 

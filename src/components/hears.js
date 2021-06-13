@@ -40,7 +40,7 @@ const Headers = ({navigation, title})=>{
     let [fontsLoaded] = useFonts({Nunito_200ExtraLight, Nunito_600SemiBold,Nunito_300Light,Nunito_400Regular});
     if(fontsLoaded){
     return(
-        <View style={styles.Headers}>
+        <View style={{...styles.Headers,paddingTop:2}}>
             <TouchableOpacity onPress={()=>navigation.dispatch(DrawerActions.openDrawer())}>
                 <View style={styles.left}>
                     <Entypo name="menu" size={35} color="gray" />

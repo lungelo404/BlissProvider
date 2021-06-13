@@ -8,19 +8,20 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "cover",
-      "backgroundColor": "#b69b61" 
+      "backgroundColor": "#b69b61"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": [  
-      "**/*" 
+    "assetBundlePatterns": [
+      "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "iosProvider"
     },
     "android": {
-      "package": "com.app.bliss", 
+      "package": "com.app.bliss",
       "useNextNotificationsApi": true,
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {

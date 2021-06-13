@@ -94,7 +94,7 @@ const registerForNotificationToken = async ()=>{
 
 
     useEffect(()=>{
-        socketConnect();
+        // socketConnect();
         getProducts();
         findNewBooking();
         setTimeout(function(){
@@ -172,6 +172,7 @@ const registerForNotificationToken = async ()=>{
             }
                 // ToastAndroid.show("Booking has expired", ToastAndroid.SHORT);
                 setNewBooking([]);
+               
             
         } catch (err) {
             console.log(err);
@@ -274,6 +275,7 @@ const registerForNotificationToken = async ()=>{
         return( 
             <View style={{flex:1}}>
                 <StatusBar animated={true}  backgroundColor="grey" />   
+
                 <Header navigation={navigation} title="Live tasks" /> 
                 {stateAuth.userDetails.isAproved  && !stateAuth.userDetails.isSuspended?
                 <>          
@@ -398,6 +400,15 @@ const registerForNotificationToken = async ()=>{
 
                }
 
+
+            <View style={styles.Design}>
+                   <TouchableOpacity onPress={()=>navigation.navigate('contacts')}>
+                     <Entypo name="message" size={35} color="white" />
+                 </TouchableOpacity>
+            </View>
+
+
+
             </View>
         )
     }
@@ -405,6 +416,15 @@ const registerForNotificationToken = async ()=>{
 }
 
 const styles = StyleSheet.create({
+    Design:{
+        position:'absolute',   
+        right:20,
+        bottom:40,
+        backgroundColor:'#68823b',
+        padding:10,
+        borderRadius:100,
+        zIndex:10
+      },      
     please:{
         fontSize:10,
         textAlign:'center',

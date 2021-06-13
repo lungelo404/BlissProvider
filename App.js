@@ -36,6 +36,8 @@ import Checkout from "./src/screens/Checkout";
 import ProductDetail from "./src/screens/productDetails";
 import Notifications from './src/screens/notifications';
 import NotificationDetail from "./src/screens/notificationDetail";
+import Contact from "./src/screens/contacts";
+import Chat from "./src/screens/Chat";
 
 import Sidebar from "./src/components/sidebar";
  
@@ -51,6 +53,7 @@ import PrivacyPolicy from './src/screens/privacyPolicy';
 import deposit from './src/screens/deposit';
 import shopOrders from './src/screens/shopOrders';
 import Portfolio from './src/screens/portfolio';
+import BookingInfo from './src/screens/bookingInfo';
  
 const switchNavigator = createSwitchNavigator({
    resolve:ResolveAuth, 
@@ -83,6 +86,10 @@ const switchNavigator = createSwitchNavigator({
       LoadWallets:LoadWallets,
       Notifications:Notifications,
       NotificationDetail:NotificationDetail
+    }),
+    chatFlow:createStackNavigator({
+      contacts:Contact,
+      chat:Chat
     })
    },{   
      contentComponent:props=><Sidebar {...props} />
@@ -98,8 +105,10 @@ const switchNavigator = createSwitchNavigator({
       sos:sos,
       privacy:PrivacyPolicy,
       portfolio:Portfolio
-      
    }),
+   bookinginfoFlow:createStackNavigator({
+     bookingInfo:BookingInfo
+   })
 });
 const App = createAppContainer(switchNavigator);
   
